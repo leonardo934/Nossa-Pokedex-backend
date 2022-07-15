@@ -4,6 +4,8 @@ const database = require("../config/database");
 
 const api = require("../api/pokeApi");
 
+
+
 const listPokemons = async (req, res, next) => {
 
   try {
@@ -16,9 +18,11 @@ const listPokemons = async (req, res, next) => {
 
       allPokemons = [];
 
-
-
     let count = 0;
+
+
+
+
 
 
 
@@ -36,6 +40,8 @@ const listPokemons = async (req, res, next) => {
 
     };
 
+
+
     for await (const id of randomPokemons) {
 
       const { data } = await api(`/evolution-chain/` + id)
@@ -44,11 +50,11 @@ const listPokemons = async (req, res, next) => {
 
     };
 
+
+
     pokemonId.forEach((pokemon) => {
 
       const newPokemon = pokemon
-
-
 
       if (count < 10) {
 
@@ -61,6 +67,8 @@ const listPokemons = async (req, res, next) => {
           pokemonsIds.push(newPokemon.chain.evolves_to[0].species.url.split("/")[6]);
 
         };
+
+
 
       } else {
 
@@ -76,9 +84,15 @@ const listPokemons = async (req, res, next) => {
 
       };
 
+
+
       count++;
 
+
+
     });
+
+
 
     for await (const id of pokemonsIds) {
 
@@ -87,6 +101,9 @@ const listPokemons = async (req, res, next) => {
       allPokemons.push(data)
 
     };
+
+
+
     const preparePokemons = allPokemons.map((pokemon) => {
 
       const newPokemon = pokemon;
@@ -95,17 +112,11 @@ const listPokemons = async (req, res, next) => {
 
         id: uuidv4(),
 
-        pokeapi_id: newPokemon.id,
-
         name: newPokemon.name,
 
-        type_one: newPokemon.types[0].type.name,
-
-        type_two: newPokemon.types[1] ? newPokemon.types[1].type.name : null,
-
-        sprite: newPokemon.sprites.other["official-artwork"].front_default
-
       }
+
+
 
       newPokemon.stats.forEach((stat) => {
 
@@ -121,39 +132,60 @@ const listPokemons = async (req, res, next) => {
 
       });
 
-      const totalAbilities = newPokemon.abilities.length;
+      createPokemon.type_one = newPokemon.types[0].type.name;
 
-      let ability_one = Math.floor(Math.random() * totalAbilities) + 1;
+      createPokemon.type_two = newPokemon.types[1] ? newPokemon.types[1].type.name : null;
 
-      let ability_two = Math.floor(Math.random() * totalAbilities) + 1;
+      createPokemon.sprite = newPokemon.sprites.other["official-artwork"].front_default;
 
+      let ability_one = Math.floor(Math.random() * newPokemon.abilities.length) + 1;
 
-
-      if (totalAbilities > 1) {
-        do {
-          ability_two = MAth.floor(Math.random() * totalAbilities) + 1
-        } while (ability_one == ability_two) ability_two = Math.floor(Math.random() * totalAbilities) + 1;
-
-        createPokemon.ability_two = newPokemon.abilities[ability_two - 1].ability.name
-
-      };
+      let ability_two = Math.floor(Math.random() * newPokemon.abilities.length) + 1;
 
       createPokemon.ability_one = newPokemon.abilities[ability_one - 1].ability.name;
 
-      createPokemon.ability_two = newPokemon.abilities[ability_two - 1].ability.name;
+      if (newPokemon.abilities.length > 1) {
+
+        do {
+
+          ability_two = Math.floor(Math.random() * newPokemon.abilities.length) + 1
+
+        } while (ability_one === ability_two)
+
+        createPokemon.ability_two = newPokemon.abilities[ability_two - 1].ability.name
+
+      } else createPokemon.ability_two = null
+
+
+
+      createPokemon.pokeapi_id = newPokemon.id;
+
+
 
       return createPokemon;
 
     });
 
+
+
     res.status(200).send({ count: preparePokemons.length, pokemons: preparePokemons });
+
+
 
   } catch (error) {
 
+
+
     console.log(error);
+
+
 
   };
 
+
+
 };
+
+
 
 module.exports = { listPokemons };
