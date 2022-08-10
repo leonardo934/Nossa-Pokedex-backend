@@ -2,7 +2,7 @@ create schema pokemon
 
 create table pokemon.users(
     id text primary key,
-    nome text not null,
+    name text not null,
     password text not null,
     email text not null,
     date timestamp default now()
